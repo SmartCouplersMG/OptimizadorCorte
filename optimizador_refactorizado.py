@@ -697,6 +697,25 @@ def ejecutar_optimizacion(archivo_excel):
         longitud_total_producida = longitud_total_piezas_cortadas + longitud_total_piezas_unidas
         longitud_total_consumida_nueva = longitud_total_barras_corte + longitud_sobrantes_usados_original
         metricas['eficiencia_total'] = longitud_total_producida / longitud_total_consumida_nueva if longitud_total_consumida_nueva > 0 else 0
+        # --- INSERTA BLOQUE ---
+        desperdicios_corte_dict = defaultdict(int)
+        for long_barra, plan in data['plan_optimo'].items():
+            for patron, repeticiones in plan.items():
+                desperdicio = long_barra - sum(patron)
+                if desperdicio >= min_waste_param:
+                    desperdicios_corte_dict[desperdicio] += repeticiones
+        metricas['desperdicio_util_corte'] = sum(l*c for l,c in desperdicios_corte_dict.items())
+        metricas['desperdicio_util_usado_union'] = longitud_sobrantes_usados_desperdicio
+
+        excesos_union_dict = defaultdict(int)
+        for obj, combos in data.get('plan_de_union', {}).items():
+            for combo, reps in combos.items():
+                exceso = sum(combo) - obj
+                excesos_union_dict[exceso] += reps
+        metricas['exceso_union'] = sum(l*c for l,c in excesos_union_dict.items())
+        metricas['exceso_util_union'] = sum(l*c for l,c in excesos_union_dict.items() if l >= min_waste_param)
+        # --- FIN DEL BLOQUE A INSERTAR ---
+        
         data['metricas'] = metricas
 
         # --- BLOQUE DE CÁLCULO DE CUMPLIMIENTO (RESTAURADO) ---
