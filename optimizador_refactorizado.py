@@ -116,7 +116,7 @@ def resolver_csp(datos_diametro, patrones_diametro):
             cantidad_producida = lpSum(patron.count(pieza) * vars_patrones[i] for i, patron in enumerate(patrones))
             problema += cantidad_producida == cant_requerida + vars_excedente[pieza], f"Req_{pieza}"
         
-        problema.solve()
+        problema.solve(pulp.PULP_CBC_CMD(timeLimit=60))
         
         plan_de_corte = {}
         if problema.status == 1:
